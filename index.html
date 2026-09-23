@@ -94,7 +94,7 @@
 
   <div class="modesw" id="segMode">
     <button data-mode="app" class="on"><span class="ic">&#128230;</span><span class="tx"><b>Aplikasi</b><small>Lalamove &middot; Deliveree &middot; QMove</small></span></button>
-    <button data-mode="senopati"><span class="ic">&#127970;</span><span class="tx"><b>Senopati</b><small>Klien tetap &middot; Pulo Gadung</small></span></button>
+    <button data-mode="klien"><span class="ic">&#127970;</span><span class="tx"><b>Klien Tetap</b><small>Borongan &middot; Jakarta</small></span></button>
   </div>
 
   <div class="card">
@@ -112,9 +112,9 @@
       </div>
     </div>
     <div class="field" id="dealerWrap" style="display:none">
-      <label>Dealer (asal muat) <span class="hint">tujuan tetap: KTB Pulo Gadung, Jakarta</span></label>
+      <label>Asal muat (kota) <span class="hint">tujuan tetap: Jakarta</span></label>
       <select id="dealer"></select>
-      <div class="hint" id="senoNote" style="margin-top:6px">PT PJPT Senopati &middot; Box Aluminium &middot; No Pol A 9124 ZA. Tarif terisi otomatis dari data terakhir sheet &mdash; bisa diubah sesuai invoice.</div>
+      <div class="hint" id="senoNote" style="margin-top:6px">Klien tetap &middot; tarif borongan. Terisi otomatis dari data terakhir &mdash; bisa diubah sesuai invoice.</div>
     </div>
     <div class="field" id="fromWrap"><label>Dari kota</label><select id="from"></select></div>
     <div class="swap" id="swapWrap"><button id="swap" title="Tukar">&#8645;</button></div>
@@ -191,7 +191,7 @@
       <tr><td>Komisi Lalamove (15% &lt;50km / 5% &gt;50km)</td><td><a href="https://www.lalamove.com/id/komisi-lalamove" target="_blank">Lalamove</a></td></tr>
       <tr><td>Tarif &amp; tol antarkota Lalamove Engkel Box (tol ditanggung pemesan)</td><td><a href="https://www.lalamove.com/id/tarif" target="_blank">Lalamove Tarif</a></td></tr>
       <tr><td>Komisi QMove: &le;50km 14%/22%, &gt;50km 5%/12% + pajak 11%</td><td>Layanan Pelanggan QMove (in-app)</td></tr>
-      <tr><td>Klien tetap Senopati: dealer, tarif borongan, PPN 11%</td><td><a href="https://docs.google.com/spreadsheets/d/1rfxolAB0Bdn4C3O_n02XSS9B9dJlPjhWCKLMDqtSQPc/edit" target="_blank">Sheet Senopati</a></td></tr>
+      <tr><td>Klien tetap: tarif borongan per kota asal + PPN 11%</td><td>Data internal</td></tr>
     </table>
     <div class="updated">Komisi QMove tergantung stiker terpasang (angka lebih kecil) atau belum. Semua % adalah <b>batas maksimal</b> — rincian asli tetap ada di halaman detail pesanan app. <b>Tol ditanggung pemesan:</b> di Lalamove antarkota tol otomatis ditambahkan di atas tarif; di QMove tol/parkir boleh ditagih ke pemesan asal disepakati sebelum berangkat. Kalau begitu, aktifkan toggle "Tol ditanggung pemesan → Ya" biar tol tak dipotong dari untung.</div>
     <div class="updated">Tarif Gol I diverifikasi silang ke 2 sumber 2026 (detik + par.co.id, mengutip BPJT/Jasa Marga). Pemetaan kota&rarr;gerbang tol = perkiraan (gerbang terdekat). Tol Jogja–Solo bersifat sementara (sumber berbeda 42rb&ndash;57rb), dipakai 57rb.</div>
@@ -408,23 +408,15 @@ const cityOpts=provs.map(p=>`<optgroup label="${p}">`+CITIES.filter(c=>c.prov===
 $("#from").innerHTML=cityOpts; $("#to").innerHTML=cityOpts;
 $("#from").value="jakarta"; $("#to").value="bandung";
 
-// ===== KLIEN TETAP: PT PJPT SENOPATI =====
-// Sumber: Google Sheet "RINCIAN SENOPATI". Tujuan selalu KTB Pulo Gadung (Jakarta).
-// Tarif = harga borongan per dealer/asal (referensi terakhir dari sheet, bisa diedit per order).
-const SENOPATI=[
-  {nama:"Bumen Redja Abadi — Jakarta",city:"jakarta",tarif:915000},
-  {nama:"Bumen Redja Abadi — Tangerang",city:"kt-tangerang",tarif:800000},
-  {nama:"Salindo Berlian Motor — Jakarta",city:"jakarta",tarif:915000},
-  {nama:"Srikandi Diamond Motors — Jakarta",city:"jakarta",tarif:1165000},
-  {nama:"Srikandi Diamond Motors — Bandung",city:"bandung",tarif:1152500},
-  {nama:"Dipo Internasional Pahala Otomotif — Tangerang",city:"kt-tangerang",tarif:800000},
-  {nama:"Mustika Prima Berlian — Jakarta",city:"jakarta",tarif:915000},
-  {nama:"Suryaputra Sarana — Bandung",city:"bandung",tarif:902500},
-  {nama:"Sun Star Motor — Jakarta",city:"jakarta",tarif:915000},
-  {nama:"Prabu Pendawa Motor — Bogor",city:"kt-bogor",tarif:760000},
-  {nama:"Wicaksana Berlian Motor — Bandung",city:"bandung",tarif:1152500}
+// ===== KLIEN TETAP (borongan) =====
+// Tujuan selalu Jakarta (gudang pusat). Tarif borongan per kota asal (referensi, bisa diedit).
+const KLIEN=[
+  {nama:"Jakarta",city:"jakarta",tarif:915000},
+  {nama:"Tangerang",city:"kt-tangerang",tarif:800000},
+  {nama:"Bandung",city:"bandung",tarif:1152500},
+  {nama:"Bogor",city:"kt-bogor",tarif:760000}
 ];
-$("#dealer").innerHTML=SENOPATI.map((d,i)=>`<option value="${i}">${d.nama} · ${rp(d.tarif)}</option>`).join("");
+$("#dealer").innerHTML=KLIEN.map((d,i)=>`<option value="${i}">${d.nama}</option>`).join("");
 const fuelPrice=()=>FUEL.find(f=>f.id===$("#fuel").value).harga;
 
 // Dijkstra berdasar km -> urutan edge yang dilewati
@@ -446,7 +438,7 @@ function pathEdges(){
   return path;
 }
 function komisiRate(){ const km=totals().km;
-  if(state.mode==="senopati") return 0;
+  if(state.mode==="klien") return 0;
   if(state.app==="lalamove") return km>50?5:15;
   if(state.app==="qmove") return km>50?(state.stiker?5:12):(state.stiker?14:22);
   return +$("#komisi").value||0; }
@@ -474,7 +466,7 @@ function renderRuas(){
 function calc(){
   const fare=+$("#fare").value||0,kml=+$("#kml").value||10,lain=+$("#lain").value||0,t=totals();
   if(state.app==="lalamove"||state.app==="qmove") $("#komisi").value=komisiRate();
-  const seno=state.mode==="senopati";
+  const seno=state.mode==="klien";
   const kom=state.net?0:fare*(komisiRate()/100), ppn=kom*(ppnRate()/100), terima=fare-kom-ppn;
   const tolPot=state.tolCust?0:t.tol;
   const tip=seno&&state.adaTip?tipTotal():0;
@@ -494,7 +486,7 @@ function calc(){
     <div class="r"><span>Biaya lain</span><span class="minus">− ${rp(lain)}</span></div>
     <div class="r tot"><span>Untung bersih</span><span>${rp(bersih)}</span></div>
     ${seno?`<div class="r" style="margin-top:6px;opacity:.8"><span>PPN 11% (untuk invoice)</span><span>+ ${rp(ppnInv)}</span></div>
-    <div class="r" style="opacity:.8"><span>Total tagih ke Senopati</span><span>${rp(fare+ppnInv)}</span></div>`:""}`;
+    <div class="r" style="opacity:.8"><span>Total tagih ke klien</span><span>${rp(fare+ppnInv)}</span></div>`:""}`;
 }
 function setApp(a){state.app=a;document.querySelectorAll("#segApp button").forEach(b=>b.classList.toggle("on",b.dataset.app===a));
   $("#appNote").innerHTML=appNotes[a];$("#komisi").value=komisiDefault[a];$("#komisi").disabled=(a==="lalamove"||a==="qmove");
@@ -503,11 +495,11 @@ function setStiker(v){state.stiker=+v;document.querySelectorAll("#segStiker butt
 function setTol(v){state.tolCust=+v;document.querySelectorAll("#segTol button").forEach(b=>b.classList.toggle("on",+b.dataset.tol===state.tolCust));calc();}
 function setTip(v){state.adaTip=+v;document.querySelectorAll("#segTip button").forEach(b=>b.classList.toggle("on",+b.dataset.tip===state.adaTip));$("#tipDetail").style.display=state.adaTip?"block":"none";calc();}
 function setMode(m){state.mode=m;document.querySelectorAll("#segMode button").forEach(b=>b.classList.toggle("on",b.dataset.mode===m));
-  const seno=m==="senopati";
+  const seno=m==="klien";
   document.body.classList.toggle("seno",seno);
   document.querySelector('meta[name="theme-color"]').setAttribute("content",seno?"#155fa6":"#c85d16");
-  $("#kick").innerHTML=seno?"Klien Tetap &middot; PT PJPT Senopati &middot; Pulo Gadung":"Angkut Barang &middot; Jaringan Tol Jawa &middot; Gol I";
-  $("#sub").innerHTML=seno?"Pilih dealer asal muat &mdash; tujuan tetap KTB Pulo Gadung. Tarif borongan terisi otomatis, lalu keluar untung bersih setelah BBM &amp; tol.":"Pilih kota asal &amp; tujuan &mdash; sistem cari jalur tol otomatis. Centang tol yang dilewati, bypass yang tidak. Isi tarif app &rarr; keluar untung bersih.";
+  $("#kick").innerHTML=seno?"Klien Tetap &middot; Borongan &middot; Tujuan Jakarta":"Angkut Barang &middot; Jaringan Tol Jawa &middot; Gol I";
+  $("#sub").innerHTML=seno?"Pilih kota asal muat &mdash; tujuan tetap Jakarta. Tarif borongan terisi otomatis, lalu keluar untung bersih setelah BBM &amp; tol.":"Pilih kota asal &amp; tujuan &mdash; sistem cari jalur tol otomatis. Centang tol yang dilewati, bypass yang tidak. Isi tarif app &rarr; keluar untung bersih.";
   $("#appWrap").style.display=seno?"none":"block";
   $("#dealerWrap").style.display=seno?"block":"none";
   $("#fromWrap").style.display=seno?"none":"block";
@@ -515,12 +507,12 @@ function setMode(m){state.mode=m;document.querySelectorAll("#segMode button").fo
   $("#komField").style.display=seno?"none":"block";
   $("#tipWrap").style.display=seno?"block":"none";
   $("#segNet").style.display=seno?"none":"flex";
-  $("#toWrap").querySelector("label").textContent=seno?"Ke kota (tetap: Pulo Gadung)":"Ke kota";
+  $("#toWrap").querySelector("label").textContent=seno?"Ke kota (tetap: Jakarta)":"Ke kota";
   $("#to").disabled=seno;
-  $("#fareLbl").textContent=seno?"Tarif borongan Senopati (Rp)":"Tarif dari aplikasi (Rp)";
+  $("#fareLbl").textContent=seno?"Tarif borongan (Rp)":"Tarif dari aplikasi (Rp)";
   if(seno){state.net=0;applyDealer();} else {setApp(state.app);changeRoute();}
 }
-function applyDealer(){const d=SENOPATI[+$("#dealer").value];$("#from").value=d.city;$("#to").value="jakarta";$("#fare").value=d.tarif;changeRoute();}
+function applyDealer(){const d=KLIEN[+$("#dealer").value];$("#from").value=d.city;$("#to").value="jakarta";$("#fare").value=d.tarif;changeRoute();}
 function setNet(v){state.net=+v;document.querySelectorAll("#segNet button").forEach(b=>b.classList.toggle("on",+b.dataset.net===state.net));calc();}
 function changeRoute(){checked={};renderRuas();calc();}
 
@@ -547,8 +539,8 @@ function renderHist(){const o=load(),b=$("#hbody");b.innerHTML="";$("#hempty").s
 const nodeName=id=>CITY(id).nama;
 $("#save").onclick=()=>{const fare=+$("#fare").value||0;if(!fare){alert("Isi tarif dulu ya.");return;}
   const t=totals(),kml=+$("#kml").value||10,lain=+$("#lain").value||0;
-  const kom=state.net?0:fare*(komisiRate()/100),ppn=kom*(ppnRate()/100),tolPot=state.tolCust?0:t.tol,tip=state.mode==="senopati"&&state.adaTip?tipTotal():0,bbm=kml>0?(t.km/kml)*fuelPrice():0,bersih=fare-kom-ppn-bbm-tolPot-lain-tip,o=load();
-  o.push({tgl:new Date().toLocaleDateString("id-ID",{day:"2-digit",month:"short"}),app:state.mode==="senopati"?"Senopati":state.app,
+  const kom=state.net?0:fare*(komisiRate()/100),ppn=kom*(ppnRate()/100),tolPot=state.tolCust?0:t.tol,tip=state.mode==="klien"&&state.adaTip?tipTotal():0,bbm=kml>0?(t.km/kml)*fuelPrice():0,bersih=fare-kom-ppn-bbm-tolPot-lain-tip,o=load();
+  o.push({tgl:new Date().toLocaleDateString("id-ID",{day:"2-digit",month:"short"}),app:state.mode==="klien"?"Klien Tetap":state.app,
     rute:nodeName($("#from").value)+" → "+nodeName($("#to").value),fare,komisi:Math.round(kom+ppn),bbm:Math.round(bbm),tol:tolPot,lain:lain+tip,bersih:Math.round(bersih)});
   localStorage.setItem(KEY,JSON.stringify(o));renderHist();};
 $("#clr").onclick=()=>{if(confirm("Hapus semua riwayat?")){localStorage.removeItem(KEY);renderHist();}};
